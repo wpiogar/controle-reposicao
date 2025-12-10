@@ -7,7 +7,7 @@
  * ATUALIZADO: Nova estrutura com Saldo Anterior e Saldo Atual
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Product, ProductFilters } from '../../types/reposicao.types';
 import {
   calcularDiferenca,
@@ -41,18 +41,12 @@ const ProductsGrid: React.FC<ProductsGridProps> = ({
     sortOrder: 'asc'
   });
 
-  const updateTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  // Ref para debounce de atualizações
+  const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Paginação para performance
   const [paginaAtual, setPaginaAtual] = useState<number>(1);
   const itensPorPagina = 50;
-
-  const produtosPaginados = React.useMemo(() => {
-    const inicio = (paginaAtual - 1) * itensPorPagina;
-    const fim = inicio + itensPorPagina;
-    return produtosFiltrados.slice(inicio, fim);
-  }, [produtosFiltrados, paginaAtual]);
-
-  const totalPaginas = Math.ceil(produtosFiltrados.length / itensPorPagina);
 
   /**
    * Atualiza lista quando produtos externos mudam
@@ -180,10 +174,20 @@ const ProductsGrid: React.FC<ProductsGridProps> = ({
     return Array.from({ length: 100 }, (_, i) => i + 1);
   };
 
-  const produtosFiltrados = React.useMemo(() => getProdutosFiltrados(), [
+  // Memoização dos produtos filtrados
+  const produtosFiltrados = useMemo(() => getProdutosFiltrados(), [
     produtosEditaveis,
     filtros
   ]);
+
+  // Memoização da paginação
+  const produtosPaginados = useMemo(() => {
+    const inicio = (paginaAtual - 1) * itensPorPagina;
+    const fim = inicio + itensPorPagina;
+    return produtosFiltrados.slice(inicio, fim);
+  }, [produtosFiltrados, paginaAtual]);
+
+  const totalPaginas = Math.ceil(produtosFiltrados.length / itensPorPagina);
 
   return (
     <div className="products-grid-container">
@@ -264,7 +268,7 @@ const ProductsGrid: React.FC<ProductsGridProps> = ({
           </thead>
           
           <tbody>
-            {produtosFiltrados.length === 0 ? (
+            {produtosPaginados.length === 0 ? (
               <tr>
                 <td colSpan={8} className="empty-state">
                   <div className="empty-icon">📦</div>
@@ -384,7 +388,7 @@ const ProductsGrid: React.FC<ProductsGridProps> = ({
           </tbody>
         </table>
       </div>
-
+      
       {/* Paginação */}
       {totalPaginas > 1 && (
         <div className="pagination">

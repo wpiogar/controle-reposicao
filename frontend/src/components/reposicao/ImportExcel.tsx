@@ -89,7 +89,7 @@ const ImportExcel: React.FC<ImportExcelProps> = ({ onImport, onCancel }) => {
       const produtos: ExcelImportData[] = [];
       
       // Itera sobre as linhas
-      worksheet.eachRow((row, rowNumber) => {
+      worksheet.eachRow((row, _rowNumber) => {
         // Pega o valor da primeira célula
         const primeiraColuna = row.getCell(1);
         const nomeProduto = primeiraColuna.value;

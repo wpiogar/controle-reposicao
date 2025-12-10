@@ -7,7 +7,7 @@
  * ATUALIZADO: Nova estrutura com Saldo Anterior e Saldo Atual
  */
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Product, ExcelImportData } from '../../types/reposicao.types';
 import { calcularDiferenca, calcularCompras } from '../../utils/reposicaoCalculations';
 import ReposicaoHeader from '../../components/reposicao/ReposicaoHeader';

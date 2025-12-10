@@ -14,8 +14,7 @@ import {
   calcularCompras,
   calcularComprasComAdicional,
   precisaComprar,
-  formatarNumero,
-  validarFormulario
+  formatarNumero
 } from '../../utils/reposicaoCalculations';
 import './ProductModal.css';
 
@@ -37,7 +36,6 @@ const ProductModal: React.FC<ProductModalProps> = ({
     saldo_anterior: 0,
     saldo_atual: 0,
     vendas: 0,
-    entrada: 0,
     percentual_adicional: 10
   });
   
