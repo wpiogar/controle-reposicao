@@ -1,0 +1,160 @@
+/**
+ * Estilos: Página de Controle de Reposição
+ * 
+ * Define a aparência da página principal
+ */
+
+/* Container da página */
+.reposicao-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+/* Conteúdo principal */
+.reposicao-content {
+  padding: 2rem 0;
+}
+
+.content-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* Estado vazio grande */
+.empty-state-large {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 500px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.empty-icon-large {
+  font-size: 6rem;
+  margin-bottom: 2rem;
+  opacity: 0.5;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.empty-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #333333;
+  margin: 0 0 1rem 0;
+}
+
+.empty-description {
+  font-size: 1.125rem;
+  color: #666666;
+  margin: 0 0 2rem 0;
+  max-width: 500px;
+}
+
+/* Botão grande */
+.btn-large {
+  padding: 1rem 2rem;
+  font-size: 1.125rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.btn {
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn-primary {
+  background-color: #667eea;
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background-color: #5568d3;
+}
+
+.btn-icon {
+  font-size: 1.25rem;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .reposicao-content {
+    padding: 1rem 0;
+  }
+  
+  .content-container {
+    padding: 0 1rem;
+  }
+  
+  .empty-state-large {
+    min-height: 400px;
+    padding: 3rem 1.5rem;
+  }
+  
+  .empty-icon-large {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .empty-title {
+    font-size: 1.5rem;
+  }
+  
+  .empty-description {
+    font-size: 1rem;
+  }
+  
+  .btn-large {
+    width: 100%;
+    justify-content: center;
+    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .empty-state-large {
+    min-height: 350px;
+    padding: 2rem 1rem;
+  }
+  
+  .empty-icon-large {
+    font-size: 3rem;
+  }
+  
+  .empty-title {
+    font-size: 1.25rem;
+  }
+  
+  .empty-description {
+    font-size: 0.938rem;
+  }
+}

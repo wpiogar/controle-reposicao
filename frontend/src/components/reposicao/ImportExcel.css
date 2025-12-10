@@ -1,0 +1,332 @@
+/**
+ * Estilos: Componente de Importação Excel
+ * 
+ * Define a aparência do componente de upload e preview
+ */
+
+/* Container principal */
+.import-excel-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+/* Card de importação */
+.import-excel-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Cabeçalho */
+.import-header {
+  padding: 2rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.import-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #333333;
+  margin: 0 0 0.5rem 0;
+}
+
+.import-subtitle {
+  font-size: 0.938rem;
+  color: #666666;
+  margin: 0;
+}
+
+/* Corpo */
+.import-body {
+  padding: 2rem;
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Input de arquivo customizado */
+.file-input-wrapper {
+  margin-bottom: 1.5rem;
+}
+
+.file-input {
+  display: none;
+}
+
+.file-input-label {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  border: 2px dashed #667eea;
+  border-radius: 8px;
+  background-color: #f8f9ff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.file-input-label:hover {
+  background-color: #eef1ff;
+  border-color: #5568d3;
+}
+
+.file-icon {
+  font-size: 2rem;
+}
+
+.file-text {
+  font-size: 1rem;
+  color: #667eea;
+  font-weight: 500;
+  flex: 1;
+}
+
+/* Informações de formato */
+.format-info {
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.format-info-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #333333;
+  margin: 0 0 0.5rem 0;
+}
+
+.format-info-list {
+  margin: 0;
+  padding-left: 1.5rem;
+  font-size: 0.875rem;
+  color: #666666;
+}
+
+.format-info-list li {
+  margin-bottom: 0.25rem;
+}
+
+/* Botão de processar */
+.btn-process {
+  width: 100%;
+  padding: 0.875rem;
+  background-color: #667eea;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 1rem;
+}
+
+.btn-process:hover:not(:disabled) {
+  background-color: #5568d3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-process:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Alertas */
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.alert-error {
+  background-color: #fee;
+  border: 1px solid #fcc;
+  color: #c33;
+}
+
+.alert-icon {
+  font-size: 1.25rem;
+}
+
+.alert-text {
+  font-size: 0.938rem;
+  font-weight: 500;
+}
+
+/* Preview dos produtos */
+.preview-container {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: #f8f9ff;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.preview-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333333;
+  margin: 0;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: #667eea;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.btn-link:hover {
+  color: #5568d3;
+}
+
+.preview-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.preview-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.preview-item:last-child {
+  border-bottom: none;
+}
+
+.preview-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background-color: #667eea;
+  color: #ffffff;
+  border-radius: 50%;
+  font-size: 0.813rem;
+  font-weight: 600;
+}
+
+.preview-name {
+  font-size: 0.938rem;
+  color: #333333;
+  flex: 1;
+}
+
+.preview-more {
+  padding: 1rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #666666;
+  font-style: italic;
+  background-color: #f8f8f8;
+}
+
+/* Rodapé */
+.import-footer {
+  padding: 1.5rem 2rem;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.btn-cancel {
+  padding: 0.75rem 1.5rem;
+  background-color: #f5f5f5;
+  color: #666666;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 0.938rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-cancel:hover {
+  background-color: #e8e8e8;
+}
+
+.btn-confirm {
+  padding: 0.75rem 1.5rem;
+  background-color: #4caf50;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.938rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-confirm:hover:not(:disabled) {
+  background-color: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.btn-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .import-excel-card {
+    max-width: 100%;
+    border-radius: 0;
+    max-height: 100vh;
+  }
+  
+  .import-header,
+  .import-body,
+  .import-footer {
+    padding: 1.5rem;
+  }
+  
+  .import-title {
+    font-size: 1.25rem;
+  }
+  
+  .import-footer {
+    flex-direction: column-reverse;
+  }
+  
+  .btn-cancel,
+  .btn-confirm {
+    width: 100%;
+  }
+}
