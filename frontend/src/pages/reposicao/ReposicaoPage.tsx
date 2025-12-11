@@ -7,7 +7,7 @@
  * ATUALIZADO: Nova estrutura com Saldo Anterior e Saldo Atual
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Product, ExcelImportData } from '../../types/reposicao.types';
 import ReposicaoHeader from '../../components/reposicao/ReposicaoHeader';
 import ImportExcel from '../../components/reposicao/ImportExcel';
@@ -123,14 +123,10 @@ const ReposicaoPage: React.FC = () => {
     mostrarNotificacao('success', `${novosProdutos.length} produtos importados com sucesso!`);
   };
 
-  // Ref para debounce de salvamento
-  const saveTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
-
 /**
  * Manipula atualização de produto
  */
 const handleAtualizarProduto = (id: number, produtoAtualizado: Product) => {
-  // Atualiza estado imediatamente
   setProdutos(prevProdutos =>
     prevProdutos.map(p =>
       p.id === id
@@ -138,15 +134,6 @@ const handleAtualizarProduto = (id: number, produtoAtualizado: Product) => {
         : p
     )
   );
-  
-  // Debounce do salvamento no localStorage (não precisa ser imediato)
-  if (saveTimeoutRef.current) {
-    clearTimeout(saveTimeoutRef.current);
-  }
-  
-  saveTimeoutRef.current = setTimeout(() => {
-    salvarDadosLocalStorage();
-  }, 1000);
 };
 
   /**
