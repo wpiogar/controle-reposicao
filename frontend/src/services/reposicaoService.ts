@@ -4,10 +4,10 @@
  * Integração com backend FastAPI
  */
 
-import { Product, ExcelImportData } from '../types/reposicao.types';
+import { Product } from '../types/reposicao.types';
 
 // URL da API (altere conforme ambiente)
-const API_URL = import.meta.env.VITE_API_URL || 'https://reposicao-api.onrender.com/api/v1/reposicao';
+const API_URL = (import.meta as any).env?.VITE_API_URL || 'https://reposicao-api.onrender.com/api/v1/reposicao';
 
 /**
  * Busca todos os produtos
