@@ -100,7 +100,7 @@ const processarArquivo = async () => {
       console.log('✅ Planilha processada detectada');
       
       worksheet.eachRow((row, _rowNumber) => {
-        if (rowNumber === 1) return; // Pula cabeçalho
+        if (_rowNumber === 1) return; // Pula cabeçalho
         
         const nome = row.getCell(1).value;
         const saldoAnterior = row.getCell(2).value;
@@ -120,7 +120,7 @@ const processarArquivo = async () => {
       // PLANILHA SIMPLES - lê apenas nomes
       console.log('📋 Planilha simples detectada');
       
-      worksheet.eachRow((row, rowNumber) => {
+      worksheet.eachRow((row) => {
         const primeiraColuna = row.getCell(1);
         const nomeProduto = primeiraColuna.value;
         
