@@ -7,9 +7,8 @@
  * ATUALIZADO: Nova estrutura com Saldo Anterior e Saldo Atual
  */
 
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Product, ExcelImportData } from '../../types/reposicao.types';
-import { calcularDiferenca, calcularCompras } from '../../utils/reposicaoCalculations';
 import ReposicaoHeader from '../../components/reposicao/ReposicaoHeader';
 import ImportExcel from '../../components/reposicao/ImportExcel';
 import ProductsGrid from '../../components/reposicao/ProductsGrid';
@@ -23,6 +22,7 @@ const ReposicaoPage: React.FC = () => {
   const [produtoSelecionado, setProdutoSelecionado] = useState<Product | null>(null);
   const [mostrarImportacao, setMostrarImportacao] = useState<boolean>(false);
   const [mostrarModal, setMostrarModal] = useState<boolean>(false);
+  const [mostrarModalNovoProduto, setMostrarModalNovoProduto] = useState<boolean>(false);
   const [dataContagem, setDataContagem] = useState<string>('');
   const [proximoId, setProximoId] = useState<number>(1);
 
@@ -218,6 +218,56 @@ const handleAtualizarProduto = (id: number, produtoAtualizado: Product) => {
     // Abre importação
     setMostrarImportacao(true);
   };
+
+  /**
+ * Abre modal para adicionar produto avulso
+ */
+const handleAdicionarProduto = () => {
+  // Cria produto vazio
+  const novoProduto: Product = {
+    id: proximoId,
+    nome: '',
+    saldo_anterior: 0,
+    saldo_atual: 0,
+    vendas: 0,
+    diferenca: 0,
+    compras: 0,
+    compras_com_adicional: 0,
+    percentual_adicional: 10,
+    data_contagem: dataContagem || new Date().toISOString().split('T')[0],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+  
+  setProdutoSelecionado(novoProduto);
+  setMostrarModalNovoProduto(true);
+};
+
+/**
+ * Salva novo produto criado manualmente
+ */
+const handleSalvarNovoProduto = (produto: Product) => {
+  // Valida nome
+  if (!produto.nome || produto.nome.trim().length === 0) {
+    alert('Nome do produto é obrigatório');
+    return;
+  }
+  
+  // Define data de contagem se não existir
+  if (!dataContagem) {
+    setDataContagem(new Date().toISOString().split('T')[0]);
+  }
+  
+  // Adiciona produto à lista
+  setProdutos(prevProdutos => [...prevProdutos, produto]);
+  setProximoId(proximoId + 1);
+  
+  // Fecha modal
+  setMostrarModalNovoProduto(false);
+  setProdutoSelecionado(null);
+  
+  mostrarNotificacao('success', 'Produto adicionado com sucesso!');
+};
 
   /**
    * Exporta relatório de compras em HTML
@@ -428,6 +478,7 @@ const handleAtualizarProduto = (id: number, produtoAtualizado: Product) => {
         totalPrecisaComprar={calcularTotalPrecisaComprar()}
         dataContagem={dataContagem}
         onNovaContagem={handleNovaContagem}
+        onAdicionarProduto={handleAdicionarProduto}
         onExportar={handleExportar}
       />
       
@@ -480,6 +531,18 @@ const handleAtualizarProduto = (id: number, produtoAtualizado: Product) => {
           produto={produtoSelecionado}
           onClose={handleFecharModal}
           onSave={handleSalvarModal}
+        />
+      )}
+
+      {/* Modal de Novo Produto */}
+      {mostrarModalNovoProduto && produtoSelecionado && (
+        <ProductModal
+          produto={produtoSelecionado}
+          onClose={() => {
+            setMostrarModalNovoProduto(false);
+            setProdutoSelecionado(null);
+          }}
+          onSave={handleSalvarNovoProduto}
         />
       )}
     </div>
