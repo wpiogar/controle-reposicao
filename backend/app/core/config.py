@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     # Configurações do banco de dados
     DATABASE_URL: str = os.getenv(
         "DATABASE_URL",
-        "postgresql://user:password@localhost:5432/reposicao"
+        "sqlite:///./reposicao.db"  # SQLite como padrão local
     )
     
     # Configurações da API

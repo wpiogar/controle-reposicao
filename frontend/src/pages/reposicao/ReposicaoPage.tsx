@@ -10,6 +10,7 @@
 import React, { useState, useEffect } from 'react';
 import { Product, ExcelImportData } from '../../types/reposicao.types';
 import * as reposicaoService from '../../services/reposicaoService';
+import { gerarRelatorioPDF } from '../../services/pdfExportService';
 import ReposicaoHeader from '../../components/reposicao/ReposicaoHeader';
 import ImportExcel from '../../components/reposicao/ImportExcel';
 import ProductsGrid from '../../components/reposicao/ProductsGrid';
@@ -288,33 +289,21 @@ const handleSalvarNovoProduto = async (produto: Product) => {
 };
 
   /**
-   * Exporta relatório de compras em HTML
-   */
-  const handleExportar = () => {
-    // Filtra produtos que precisam comprar
-    const produtosParaComprar = produtos.filter(p => p.compras > 0);
-    
-    if (produtosParaComprar.length === 0) {
-      mostrarNotificacao('warning', 'Não há produtos para comprar no momento');
-      return;
-    }
-    
-    // Cria HTML do relatório
-    const htmlContent = gerarRelatorioHTML(produtosParaComprar);
-    
-    // Cria blob e link de download
-    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `relatorio_compras_${dataContagem}.html`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+ * Exporta relatório de compras em PDF
+ */
+const handleExportar = () => {
+  try {
+    gerarRelatorioPDF({
+      dataContagem,
+      produtos
+    });
     
     mostrarNotificacao('success', 'Relatório de compras exportado com sucesso!');
-  };
+  } catch (error) {
+    console.error('Erro ao gerar PDF:', error);
+    mostrarNotificacao('error', 'Erro ao gerar relatório PDF');
+  }
+};
 
   /**
    * Gera HTML do relatório de compras

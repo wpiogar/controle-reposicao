@@ -11,8 +11,14 @@ database_url = settings.DATABASE_URL
 if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 
-# Cria engine do SQLAlchemy
-engine = create_engine(database_url)
+# Para SQLite, não precisa de pool
+if database_url.startswith("sqlite"):
+    engine = create_engine(
+        database_url,
+        connect_args={"check_same_thread": False}
+    )
+else:
+    engine = create_engine(database_url)
 
 # Cria sessão
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
