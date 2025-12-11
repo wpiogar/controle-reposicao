@@ -13,6 +13,7 @@ interface ReposicaoHeaderProps {
   totalPrecisaComprar: number;
   dataContagem: string;
   onNovaContagem: () => void;
+  onAdicionarProduto: () => void;
   onExportar: () => void;
 }
 
@@ -21,6 +22,7 @@ const ReposicaoHeader: React.FC<ReposicaoHeaderProps> = ({
   totalPrecisaComprar,
   dataContagem,
   onNovaContagem,
+  onAdicionarProduto,
   onExportar
 }) => {
   
@@ -78,6 +80,15 @@ const ReposicaoHeader: React.FC<ReposicaoHeaderProps> = ({
           >
             <span className="btn-icon">+</span>
             Nova Contagem
+          </button>
+          
+          <button 
+            className="btn btn-success"
+            onClick={onAdicionarProduto}
+            title="Adicionar produto individual"
+          >
+            <span className="btn-icon">+</span>
+            Adicionar Produto
           </button>
           
           <button 

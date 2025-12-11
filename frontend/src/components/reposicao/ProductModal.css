@@ -260,6 +260,15 @@
   color: #1976d2;
 }
 
+.value-vermelho {
+  color: #ffffff;
+  background-color: #d32f2f;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(211, 47, 47, 0.3);
+}
+
 .calculated-formula {
   font-size: 0.813rem;
   color: #999999;
