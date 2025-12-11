@@ -99,7 +99,7 @@ const processarArquivo = async () => {
       // PLANILHA PROCESSADA - lê com todos os dados
       console.log('✅ Planilha processada detectada');
       
-      worksheet.eachRow((row, rowNumber) => {
+      worksheet.eachRow((row, _rowNumber) => {
         if (rowNumber === 1) return; // Pula cabeçalho
         
         const nome = row.getCell(1).value;
