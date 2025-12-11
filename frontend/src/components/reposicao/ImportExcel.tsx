@@ -59,42 +59,71 @@ const ImportExcel: React.FC<ImportExcelProps> = ({ onImport, onCancel }) => {
   };
 
   /**
-   * Processa o arquivo Excel e extrai os nomes dos produtos
-   */
-  const processarArquivo = async () => {
-    if (!arquivo) {
-      setErro('Nenhum arquivo selecionado');
-      return;
+ * Processa o arquivo Excel e extrai os dados dos produtos
+ */
+const processarArquivo = async () => {
+  if (!arquivo) {
+    setErro('Nenhum arquivo selecionado');
+    return;
+  }
+  
+  setCarregando(true);
+  setErro('');
+  
+  try {
+    const workbook = new ExcelJS.Workbook();
+    const arrayBuffer = await arquivo.arrayBuffer();
+    await workbook.xlsx.load(arrayBuffer);
+    
+    const worksheet = workbook.worksheets[0];
+    
+    if (!worksheet) {
+      throw new Error('A planilha está vazia');
     }
     
-    setCarregando(true);
-    setErro('');
+    // Verifica se é a planilha processada (tem as colunas corretas)
+    const primeiraLinha = worksheet.getRow(1);
+    const colunas = [
+      primeiraLinha.getCell(1).value,
+      primeiraLinha.getCell(2).value,
+      primeiraLinha.getCell(3).value,
+      primeiraLinha.getCell(4).value
+    ];
     
-    try {
-      // Cria uma nova workbook
-      const workbook = new ExcelJS.Workbook();
+    const colunasEsperadas = ['Produto', 'Saldo Anterior', 'Saldo Atual', 'Vendas'];
+    const isPlanilhaProcessada = colunas.every((col, idx) => col === colunasEsperadas[idx]);
+    
+    let produtos: ExcelImportData[] = [];
+    
+    if (isPlanilhaProcessada) {
+      // PLANILHA PROCESSADA - lê com todos os dados
+      console.log('✅ Planilha processada detectada');
       
-      // Lê o arquivo
-      const arrayBuffer = await arquivo.arrayBuffer();
-      await workbook.xlsx.load(arrayBuffer);
+      worksheet.eachRow((row, rowNumber) => {
+        if (rowNumber === 1) return; // Pula cabeçalho
+        
+        const nome = row.getCell(1).value;
+        const saldoAnterior = row.getCell(2).value;
+        const saldoAtual = row.getCell(3).value;
+        const vendas = row.getCell(4).value;
+        
+        if (nome && typeof nome === 'string' && nome.trim() !== '') {
+          produtos.push({
+            nome: nome.trim(),
+            saldo_anterior: typeof saldoAnterior === 'number' ? saldoAnterior : 0,
+            saldo_atual: typeof saldoAtual === 'number' ? saldoAtual : 0,
+            vendas: typeof vendas === 'number' ? vendas : 0
+          });
+        }
+      });
+    } else {
+      // PLANILHA SIMPLES - lê apenas nomes
+      console.log('📋 Planilha simples detectada');
       
-      // Pega a primeira planilha
-      const worksheet = workbook.worksheets[0];
-      
-      if (!worksheet) {
-        throw new Error('A planilha está vazia');
-      }
-      
-      // Extrai nomes de produtos (assume que estão na primeira coluna)
-      const produtos: ExcelImportData[] = [];
-      
-      // Itera sobre as linhas
-      worksheet.eachRow((row, _rowNumber) => {
-        // Pega o valor da primeira célula
+      worksheet.eachRow((row, rowNumber) => {
         const primeiraColuna = row.getCell(1);
         const nomeProduto = primeiraColuna.value;
         
-        // Valida se há nome e não é um cabeçalho comum
         if (
           nomeProduto &&
           typeof nomeProduto === 'string' &&
@@ -107,29 +136,28 @@ const ImportExcel: React.FC<ImportExcelProps> = ({ onImport, onCancel }) => {
           });
         }
       });
-      
-      // Valida se encontrou produtos
-      if (produtos.length === 0) {
-        throw new Error('Nenhum produto válido encontrado na planilha');
-      }
-      
-      // Remove duplicatas
-      const produtosUnicos = produtos.filter(
-        (produto, index, self) =>
-          index === self.findIndex((p) => p.nome === produto.nome)
-      );
-      
-      // Atualiza preview
-      setPreview(produtosUnicos);
-      
-    } catch (error: any) {
-      console.error('Erro ao processar arquivo:', error);
-      setErro(error.message || 'Erro ao processar o arquivo Excel');
-      setPreview([]);
-    } finally {
-      setCarregando(false);
     }
-  };
+    
+    if (produtos.length === 0) {
+      throw new Error('Nenhum produto válido encontrado na planilha');
+    }
+    
+    // Remove duplicatas
+    const produtosUnicos = produtos.filter(
+      (produto, index, self) =>
+        index === self.findIndex((p) => p.nome === produto.nome)
+    );
+    
+    setPreview(produtosUnicos);
+    
+  } catch (error: any) {
+    console.error('Erro ao processar arquivo:', error);
+    setErro(error.message || 'Erro ao processar o arquivo Excel');
+    setPreview([]);
+  } finally {
+    setCarregando(false);
+  }
+};
 
   /**
    * Confirma a importação dos produtos
@@ -187,12 +215,12 @@ const ImportExcel: React.FC<ImportExcelProps> = ({ onImport, onCancel }) => {
           
           {/* Informações sobre o formato */}
           <div className="format-info">
-            <p className="format-info-title">Formato esperado:</p>
+            <p className="format-info-title">Formatos aceitos:</p>
             <ul className="format-info-list">
+              <li><strong>Planilha Processada:</strong> Com colunas "Produto", "Saldo Anterior", "Saldo Atual", "Vendas"</li>
+              <li><strong>Planilha Simples:</strong> Apenas nomes dos produtos na primeira coluna</li>
               <li>Arquivo Excel (.xlsx ou .xls)</li>
-              <li>Nomes dos produtos na primeira coluna</li>
-              <li>Uma linha por produto</li>
-              <li>Cabeçalhos serão ignorados automaticamente</li>
+              <li>O sistema detecta automaticamente o formato</li>
             </ul>
           </div>
           

@@ -20,6 +20,7 @@ class Settings(BaseSettings):
         "http://localhost:5173",
         "http://localhost:3000",
         "https://controle-reposicao.onrender.com"
+        "https://reposicao-api.onrender.com"
     ]
     
     class Config:

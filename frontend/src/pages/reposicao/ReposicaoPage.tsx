@@ -77,33 +77,41 @@ const ReposicaoPage: React.FC = () => {
     try {
       setCarregando(true);
       
-      // Define data da contagem como hoje
       const dataHoje = new Date().toISOString().split('T')[0];
       setDataContagem(dataHoje);
       
-      // Cria produtos com valores padrão
+      // Cria produtos - se vier da planilha processada, usa os valores, senão usa zero
       const novosProdutos = produtosImportados.map((item) => ({
         nome: item.nome,
-        saldo_anterior: 0,
-        saldo_atual: 0,
-        vendas: 0,
-        diferenca: 0,
-        compras: 0,
-        compras_com_adicional: 0,
+        saldo_anterior: item.saldo_anterior ?? 0,
+        saldo_atual: item.saldo_atual ?? 0,
+        vendas: item.vendas ?? 0,
+        diferenca: (item.saldo_anterior ?? 0) - (item.saldo_atual ?? 0),
+        compras: (item.saldo_atual ?? 0) - (item.vendas ?? 0),
+        compras_com_adicional: calcularComprasComAdicional(
+          (item.saldo_atual ?? 0) - (item.vendas ?? 0),
+          10
+        ) || 0,
         percentual_adicional: 10,
         data_contagem: dataHoje
       }));
       
+      // Função auxiliar para calcular compras com adicional
+      function calcularComprasComAdicional(compras: number, percentual: number): number | null {
+        if (compras >= 0) return null;
+        const quantidadeBase = Math.abs(compras);
+        const adicional = (quantidadeBase * percentual) / 100;
+        return Math.ceil(quantidadeBase + adicional);
+      }
+      
       // Envia para o backend
       const produtosCriados = await reposicaoService.criarProdutosEmLote(novosProdutos);
       
-      // Atualiza estado
       setProdutos(produtosCriados);
       setMostrarImportacao(false);
       
-      // Feedback visual
       mostrarNotificacao('success', `${produtosCriados.length} produtos importados com sucesso!`);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao importar produtos:', error);
       mostrarNotificacao('error', 'Erro ao importar produtos');
     } finally {

@@ -34,6 +34,9 @@ export interface ProductFormData {
 // Interface para importação de Excel
 export interface ExcelImportData {
   nome: string;
+  saldo_anterior?: number;  // Opcional - vem da planilha processada
+  saldo_atual?: number;     // Opcional - vem da planilha processada
+  vendas?: number;          // Opcional - vem da planilha processada
 }
 
 // Interface para histórico
