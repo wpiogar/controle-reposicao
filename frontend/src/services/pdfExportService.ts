@@ -136,7 +136,7 @@ export const gerarRelatorioPDF = (options: PDFExportOptions): void => {
       4: { halign: 'center', cellWidth: 30 }
     },
     margin: { left: margin, right: margin },
-    didDrawPage: (data) => {
+    didDrawPage: (_data) => {
       // Rodapé em cada página
       const pageCount = (doc as any).internal.getNumberOfPages();
       const currentPage = (doc as any).internal.getCurrentPageInfo().pageNumber;
