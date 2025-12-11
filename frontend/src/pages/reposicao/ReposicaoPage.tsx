@@ -9,6 +9,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Product, ExcelImportData } from '../../types/reposicao.types';
+import * as reposicaoService from '../../services/reposicaoService';
 import ReposicaoHeader from '../../components/reposicao/ReposicaoHeader';
 import ImportExcel from '../../components/reposicao/ImportExcel';
 import ProductsGrid from '../../components/reposicao/ProductsGrid';
@@ -25,59 +26,39 @@ const ReposicaoPage: React.FC = () => {
   const [mostrarModalNovoProduto, setMostrarModalNovoProduto] = useState<boolean>(false);
   const [dataContagem, setDataContagem] = useState<string>('');
   const [proximoId, setProximoId] = useState<number>(1);
+  const [carregando, setCarregando] = useState<boolean>(false);
 
   /**
    * Carrega dados do localStorage ao montar componente
    */
   useEffect(() => {
-    carregarDadosLocalStorage();
+    carregarDadosBackend();
   }, []);
-
-  /**
-   * Salva dados no localStorage sempre que produtos mudam
-   */
-  useEffect(() => {
-    if (produtos.length > 0 || dataContagem) {
-      salvarDadosLocalStorage();
-    }
-  }, [produtos, dataContagem]);
 
   /**
    * Carrega dados salvos do localStorage
    */
-  const carregarDadosLocalStorage = () => {
+  const carregarDadosBackend = async () => {
     try {
-      const dadosSalvos = localStorage.getItem('reposicao_produtos');
-      const dataSalva = localStorage.getItem('reposicao_data_contagem');
-      const idSalvo = localStorage.getItem('reposicao_proximo_id');
+      setCarregando(true);
+      const produtosCarregados = await reposicaoService.listarProdutos();
+      setProdutos(produtosCarregados);
       
-      if (dadosSalvos) {
-        const produtosCarregados: Product[] = JSON.parse(dadosSalvos);
-        setProdutos(produtosCarregados);
+      // Define data da contagem baseado no primeiro produto
+      if (produtosCarregados.length > 0) {
+        setDataContagem(produtosCarregados[0].data_contagem);
       }
       
-      if (dataSalva) {
-        setDataContagem(dataSalva);
-      }
-      
-      if (idSalvo) {
-        setProximoId(parseInt(idSalvo));
+      // Define próximo ID
+      if (produtosCarregados.length > 0) {
+        const maxId = Math.max(...produtosCarregados.map(p => p.id || 0));
+        setProximoId(maxId + 1);
       }
     } catch (error) {
-      console.error('Erro ao carregar dados do localStorage:', error);
-    }
-  };
-
-  /**
-   * Salva dados no localStorage
-   */
-  const salvarDadosLocalStorage = () => {
-    try {
-      localStorage.setItem('reposicao_produtos', JSON.stringify(produtos));
-      localStorage.setItem('reposicao_data_contagem', dataContagem);
-      localStorage.setItem('reposicao_proximo_id', proximoId.toString());
-    } catch (error) {
-      console.error('Erro ao salvar dados no localStorage:', error);
+      console.error('Erro ao carregar produtos:', error);
+      mostrarNotificacao('error', 'Erro ao carregar produtos do servidor');
+    } finally {
+      setCarregando(false);
     }
   };
 
@@ -91,15 +72,16 @@ const ReposicaoPage: React.FC = () => {
   /**
    * Manipula importação de produtos do Excel
    */
-  const handleImportarProdutos = (produtosImportados: ExcelImportData[]) => {
-    // Define data da contagem como hoje
-    const dataHoje = new Date().toISOString().split('T')[0];
-    setDataContagem(dataHoje);
-    
-    // Cria produtos com valores padrão
-    const novosProdutos: Product[] = produtosImportados.map((item, index) => {
-      return {
-        id: proximoId + index,
+  const handleImportarProdutos = async (produtosImportados: ExcelImportData[]) => {
+    try {
+      setCarregando(true);
+      
+      // Define data da contagem como hoje
+      const dataHoje = new Date().toISOString().split('T')[0];
+      setDataContagem(dataHoje);
+      
+      // Cria produtos com valores padrão
+      const novosProdutos = produtosImportados.map((item) => ({
         nome: item.nome,
         saldo_anterior: 0,
         saldo_atual: 0,
@@ -108,49 +90,75 @@ const ReposicaoPage: React.FC = () => {
         compras: 0,
         compras_com_adicional: 0,
         percentual_adicional: 10,
-        data_contagem: dataHoje,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-    });
-    
-    // Atualiza estado
-    setProdutos(novosProdutos);
-    setProximoId(proximoId + produtosImportados.length);
-    setMostrarImportacao(false);
-    
-    // Feedback visual
-    mostrarNotificacao('success', `${novosProdutos.length} produtos importados com sucesso!`);
+        data_contagem: dataHoje
+      }));
+      
+      // Envia para o backend
+      const produtosCriados = await reposicaoService.criarProdutosEmLote(novosProdutos);
+      
+      // Atualiza estado
+      setProdutos(produtosCriados);
+      setMostrarImportacao(false);
+      
+      // Feedback visual
+      mostrarNotificacao('success', `${produtosCriados.length} produtos importados com sucesso!`);
+    } catch (error) {
+      console.error('Erro ao importar produtos:', error);
+      mostrarNotificacao('error', 'Erro ao importar produtos');
+    } finally {
+      setCarregando(false);
+    }
   };
 
 /**
  * Manipula atualização de produto
  */
-const handleAtualizarProduto = (id: number, produtoAtualizado: Product) => {
-  setProdutos(prevProdutos =>
-    prevProdutos.map(p =>
-      p.id === id
-        ? { ...produtoAtualizado, updated_at: new Date().toISOString() }
-        : p
-    )
-  );
+const handleAtualizarProduto = async (id: number, produtoAtualizado: Product) => {
+  try {
+    // Atualiza localmente primeiro (otimista)
+    setProdutos(prevProdutos =>
+      prevProdutos.map(p =>
+        p.id === id ? produtoAtualizado : p
+      )
+    );
+    
+    // Envia para o backend
+    const { id: _, created_at, updated_at, ...produtoParaEnviar } = produtoAtualizado;
+    await reposicaoService.atualizarProduto(id, produtoParaEnviar);
+  } catch (error) {
+    console.error('Erro ao atualizar produto:', error);
+    mostrarNotificacao('error', 'Erro ao salvar alterações');
+    // Recarrega do backend em caso de erro
+    carregarDadosBackend();
+  }
 };
 
   /**
    * Manipula exclusão de produto
    */
-  const handleExcluirProduto = (id: number) => {
-    // Confirma exclusão
-    const produto = produtos.find(p => p.id === id);
-    if (!produto) return;
-    
-    const confirmar = window.confirm(
-      `Tem certeza que deseja excluir o produto "${produto.nome}"?`
-    );
-    
-    if (confirmar) {
-      setProdutos(prevProdutos => prevProdutos.filter(p => p.id !== id));
-      mostrarNotificacao('info', 'Produto excluído com sucesso');
+  const handleExcluirProduto = async (id: number) => {
+    try {
+      // Confirma exclusão
+      const produto = produtos.find(p => p.id === id);
+      if (!produto) return;
+      
+      const confirmar = window.confirm(
+        `Tem certeza que deseja excluir o produto "${produto.nome}"?`
+      );
+      
+      if (confirmar) {
+        // Atualiza localmente primeiro
+        setProdutos(prevProdutos => prevProdutos.filter(p => p.id !== id));
+        
+        // Envia para o backend
+        await reposicaoService.deletarProduto(id);
+        mostrarNotificacao('info', 'Produto excluído com sucesso');
+      }
+    } catch (error) {
+      console.error('Erro ao excluir produto:', error);
+      mostrarNotificacao('error', 'Erro ao excluir produto');
+      // Recarrega do backend em caso de erro
+      carregarDadosBackend();
     }
   };
 
@@ -182,28 +190,35 @@ const handleAtualizarProduto = (id: number, produtoAtualizado: Product) => {
   /**
    * Inicia nova contagem (limpa tudo)
    */
-  const handleNovaContagem = () => {
-    // Confirma se há produtos
-    if (produtos.length > 0) {
-      const confirmar = window.confirm(
-        'Iniciar uma nova contagem irá limpar todos os dados atuais. Deseja continuar?'
-      );
+  const handleNovaContagem = async () => {
+    try {
+      // Confirma se há produtos
+      if (produtos.length > 0) {
+        const confirmar = window.confirm(
+          'Iniciar uma nova contagem irá limpar todos os dados atuais. Deseja continuar?'
+        );
+        
+        if (!confirmar) return;
+        
+        setCarregando(true);
+        
+        // Deleta todos os produtos do backend
+        await reposicaoService.deletarTodosProdutos();
+      }
       
-      if (!confirmar) return;
+      // Limpa dados locais
+      setProdutos([]);
+      setDataContagem('');
+      setProximoId(1);
+      
+      // Abre importação
+      setMostrarImportacao(true);
+    } catch (error) {
+      console.error('Erro ao limpar produtos:', error);
+      mostrarNotificacao('error', 'Erro ao limpar produtos');
+    } finally {
+      setCarregando(false);
     }
-    
-    // Limpa dados
-    setProdutos([]);
-    setDataContagem('');
-    setProximoId(1);
-    
-    // Limpa localStorage
-    localStorage.removeItem('reposicao_produtos');
-    localStorage.removeItem('reposicao_data_contagem');
-    localStorage.removeItem('reposicao_proximo_id');
-    
-    // Abre importação
-    setMostrarImportacao(true);
   };
 
   /**
@@ -233,27 +248,43 @@ const handleAdicionarProduto = () => {
 /**
  * Salva novo produto criado manualmente
  */
-const handleSalvarNovoProduto = (produto: Product) => {
-  // Valida nome
-  if (!produto.nome || produto.nome.trim().length === 0) {
-    alert('Nome do produto é obrigatório');
-    return;
+const handleSalvarNovoProduto = async (produto: Product) => {
+  try {
+    // Valida nome
+    if (!produto.nome || produto.nome.trim().length === 0) {
+      alert('Nome do produto é obrigatório');
+      return;
+    }
+    
+    setCarregando(true);
+    
+    // Define data de contagem se não existir
+    const dataAtual = dataContagem || new Date().toISOString().split('T')[0];
+    if (!dataContagem) {
+      setDataContagem(dataAtual);
+    }
+    
+    // Remove campos não necessários para criação
+    const { id, created_at, updated_at, ...produtoParaCriar } = produto;
+    produtoParaCriar.data_contagem = dataAtual;
+    
+    // Cria no backend
+    const produtoCriado = await reposicaoService.criarProduto(produtoParaCriar);
+    
+    // Adiciona à lista
+    setProdutos(prevProdutos => [...prevProdutos, produtoCriado]);
+    
+    // Fecha modal
+    setMostrarModalNovoProduto(false);
+    setProdutoSelecionado(null);
+    
+    mostrarNotificacao('success', 'Produto adicionado com sucesso!');
+  } catch (error) {
+    console.error('Erro ao adicionar produto:', error);
+    mostrarNotificacao('error', 'Erro ao adicionar produto');
+  } finally {
+    setCarregando(false);
   }
-  
-  // Define data de contagem se não existir
-  if (!dataContagem) {
-    setDataContagem(new Date().toISOString().split('T')[0]);
-  }
-  
-  // Adiciona produto à lista
-  setProdutos(prevProdutos => [...prevProdutos, produto]);
-  setProximoId(proximoId + 1);
-  
-  // Fecha modal
-  setMostrarModalNovoProduto(false);
-  setProdutoSelecionado(null);
-  
-  mostrarNotificacao('success', 'Produto adicionado com sucesso!');
 };
 
   /**
@@ -472,6 +503,14 @@ const handleSalvarNovoProduto = (produto: Product) => {
       {/* Conteúdo Principal */}
       <div className="reposicao-content">
         <div className="content-container">
+
+          {/* Loading */}
+          {carregando && (
+            <div className="loading-overlay">
+              <div className="loading-spinner"></div>
+              <p>Carregando...</p>
+            </div>
+          )}
           
           {/* Estado: Sem produtos */}
           {produtos.length === 0 && !mostrarImportacao && (
